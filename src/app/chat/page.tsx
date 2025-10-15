@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { generateHopecoreResponse } from '@/ai/flows/generate-hopecore-response';
 import type { GenerateHopecoreResponseOutput } from '@/ai/flows/generate-hopecore-response';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send, Play, Pause, Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { musicSelection, MusicTrack } from '@/lib/music';
 
 type Message = {
   id: number;
@@ -36,8 +37,10 @@ export default function ChatPage() {
   const [userGoals, setUserGoals] = useState('');
   const [userStrengths, setUserStrengths] = useState('');
   const [userWeaknesses, setUserWeaknesses] = useState('');
+  const [currentTrack, setCurrentTrack] = useState<MusicTrack | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
-
+  const audioRef = useRef<HTMLAudioElement>(null);
   const { toast } = useToast();
   const router = useRouter();
   const chatBoxRef = useRef<HTMLDivElement>(null);
@@ -68,14 +71,64 @@ export default function ChatPage() {
       ]);
     }
   }, [router]);
+  
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+  
+    const fadeOut = () => {
+      let volume = audio.volume;
+      const fadeOutInterval = setInterval(() => {
+        volume -= 0.1;
+        if (volume > 0) {
+          audio.volume = volume;
+        } else {
+          audio.volume = 0;
+          audio.pause();
+          clearInterval(fadeOutInterval);
+        }
+      }, 50);
+    };
+  
+    if (!isPlaying && audio.volume > 0) {
+      fadeOut();
+    }
+  
+  }, [isPlaying]);
 
   useEffect(() => {
     chatBoxRef.current?.scrollTo({ top: chatBoxRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, isPending]);
 
-  const handleMoodClick = (mood: string) => {
+  const handleMoodClick = (mood: string, moodKey: string) => {
     setSelectedMood(mood);
     setInputValue(mood);
+    const track = musicSelection.find((t) => t.mood === moodKey);
+    if (track) {
+      setCurrentTrack(track);
+    }
+  };
+
+  const togglePlayPause = () => {
+    if (isPlaying) {
+      setIsPlaying(false);
+    } else if (audioRef.current) {
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+        // Fade in
+        let volume = 0;
+        audioRef.current!.volume = 0;
+        const fadeInInterval = setInterval(() => {
+          volume += 0.1;
+          if (volume < 1) {
+            audioRef.current!.volume = volume;
+          } else {
+            audioRef.current!.volume = 1;
+            clearInterval(fadeInInterval);
+          }
+        }, 50);
+      }).catch(error => console.error("Audio playback failed:", error));
+    }
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -93,7 +146,8 @@ export default function ChatPage() {
     };
     setMessages((prev) => [...prev, userMessage]);
     setInputValue('');
-    setSelectedMood(null);
+    // Don't reset selected mood here so music can persist
+    // setSelectedMood(null);
 
     startTransition(async () => {
       try {
@@ -126,6 +180,23 @@ export default function ChatPage() {
 
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center gap-8 p-4 sm:p-8">
+       {currentTrack && (
+        <Card className="w-full max-w-2xl bg-gradient-to-b from-white/60 to-primary/5 border border-primary/15 shadow-xl">
+          <CardContent className="p-4 flex items-center justify-between">
+             <div className="flex items-center gap-4">
+                <Music className="text-primary" />
+                <div>
+                  <p className="font-semibold">{currentTrack.title}</p>
+                  <p className="text-sm text-muted-foreground">{currentTrack.artist}</p>
+                </div>
+              </div>
+            <Button onClick={togglePlayPause} variant="ghost" size="icon">
+              {isPlaying ? <Pause /> : <Play />}
+            </Button>
+            <audio ref={audioRef} src={currentTrack.url} loop onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
+          </CardContent>
+        </Card>
+      )}
       <Card
         className={cn(
           'w-full max-w-2xl text-center bg-gradient-to-b from-white/60 to-primary/5 border border-primary/15 shadow-xl transition-transform duration-300',
@@ -144,7 +215,7 @@ export default function ChatPage() {
                   key={mood}
                   type="button"
                   variant="outline"
-                  onClick={() => handleMoodClick(name)}
+                  onClick={() => handleMoodClick(name, mood)}
                   className={cn(
                     'rounded-full border-2 transition-all duration-200 ease-in-out h-auto px-4 py-2 text-base',
                     {
