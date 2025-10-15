@@ -31,13 +31,14 @@ const prompt = ai.definePrompt({
   name: 'generateHopecoreResponsePrompt',
   input: {schema: GenerateHopecoreResponseInputSchema},
   output: {schema: GenerateHopecoreResponseOutputSchema},
-  prompt: `You are a hopecore AI assistant designed to provide uplifting and supportive messages.
+  prompt: `You are a hopecore AI assistant designed to provide uplifting and supportive messages. Your goal is to respond as humanly as possible.
 
   Based on the user's mood, generate a hopecore quote or message that offers encouragement and support.
+  You can compare their struggles or journey with fictional characters from anime, popular TV shows, movies, or books to make the response more relatable and inspiring.
 
   Mood: {{{mood}}}
 
-  Response:`, //Crucially, MUST NOT attempt to directly call functions, use await keywords, or perform any complex logic within the Handlebars template string. Handlebars is designed to be logic-less and is purely for presentation of pre-processed data.
+  Response:`,
 });
 
 const generateHopecoreResponseFlow = ai.defineFlow(
