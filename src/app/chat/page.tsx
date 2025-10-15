@@ -40,10 +40,16 @@ export default function ChatPage() {
   const [currentTrack, setCurrentTrack] = useState<MusicTrack | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
   const router = useRouter();
   const chatBoxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      audioRef.current = new Audio();
+    }
+  }, []);
 
   useEffect(() => {
     const name = localStorage.getItem('userName');
@@ -81,7 +87,7 @@ export default function ChatPage() {
       const fadeOutInterval = setInterval(() => {
         volume -= 0.1;
         if (volume > 0) {
-          audio.volume = volume;
+          audio.volume = Math.max(0, volume);
         } else {
           audio.volume = 0;
           audio.pause();
@@ -90,7 +96,7 @@ export default function ChatPage() {
       }, 50);
     };
   
-    if (!isPlaying && audio.volume > 0) {
+    if (!isPlaying && audio.volume > 0 && !audio.paused) {
       fadeOut();
     }
   
@@ -106,30 +112,45 @@ export default function ChatPage() {
     const track = musicSelection.find((t) => t.mood === moodKey);
     if (track) {
       setCurrentTrack(track);
+      if (audioRef.current) {
+        if (audioRef.current.src !== track.url) {
+            audioRef.current.src = track.url;
+            audioRef.current.loop = true;
+        }
+        togglePlayPause(true); // Autoplay new track
+      }
     }
   };
 
-  const togglePlayPause = () => {
-    if (isPlaying) {
+  const togglePlayPause = (forcePlay?: boolean) => {
+    const audio = audioRef.current;
+    if (!audio || !currentTrack) return;
+  
+    if (isPlaying && !forcePlay) {
       setIsPlaying(false);
-    } else if (audioRef.current) {
-      audioRef.current.play().then(() => {
+    } else {
+       if (audio.src !== currentTrack.url) {
+        audio.src = currentTrack.url;
+        audio.loop = true;
+      }
+      audio.play().then(() => {
         setIsPlaying(true);
         // Fade in
         let volume = 0;
-        audioRef.current!.volume = 0;
+        audio.volume = 0;
         const fadeInInterval = setInterval(() => {
           volume += 0.1;
           if (volume < 1) {
-            audioRef.current!.volume = volume;
+            audio.volume = Math.min(1, volume);
           } else {
-            audioRef.current!.volume = 1;
+            audio.volume = 1;
             clearInterval(fadeInInterval);
           }
         }, 50);
       }).catch(error => console.error("Audio playback failed:", error));
     }
   };
+
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -190,10 +211,9 @@ export default function ChatPage() {
                   <p className="text-sm text-muted-foreground">{currentTrack.artist}</p>
                 </div>
               </div>
-            <Button onClick={togglePlayPause} variant="ghost" size="icon">
+            <Button onClick={() => togglePlayPause()} variant="ghost" size="icon">
               {isPlaying ? <Pause /> : <Play />}
             </Button>
-            <audio ref={audioRef} src={currentTrack.url} loop onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
           </CardContent>
         </Card>
       )}

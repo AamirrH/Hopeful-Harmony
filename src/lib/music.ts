@@ -8,7 +8,7 @@ export type MusicTrack = {
   export const musicSelection: MusicTrack[] = [
     {
       mood: 'hopeful',
-      title: 'Golden Sunrise',
+      title: 'Golden Hour',
       artist: 'Anonymous',
       url: 'https://storage.googleapis.com/studiopa-public-data/golden-hour-lofi-193993.mp3',
     },
