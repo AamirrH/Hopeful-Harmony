@@ -25,19 +25,18 @@ const moodOptions = [
 ];
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      sender: 'bot',
-      text: '“Every feeling you have is a signpost — pay attention, it will guide you.”',
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isAnimating, setIsAnimating] = useState(false);
   const [userName, setUserName] = useState('');
   const [userInterests, setUserInterests] = useState('');
+  const [userDreams, setUserDreams] = useState('');
+  const [userGoals, setUserGoals] = useState('');
+  const [userStrengths, setUserStrengths] = useState('');
+  const [userWeaknesses, setUserWeaknesses] = useState('');
+
 
   const { toast } = useToast();
   const router = useRouter();
@@ -46,16 +45,25 @@ export default function ChatPage() {
   useEffect(() => {
     const name = localStorage.getItem('userName');
     const interests = localStorage.getItem('userInterests');
-    if (!name || !interests) {
+    const dreams = localStorage.getItem('userDreams');
+    const goals = localStorage.getItem('userGoals');
+    const strengths = localStorage.getItem('userStrengths');
+    const weaknesses = localStorage.getItem('userWeaknesses');
+
+    if (!name || !interests || !dreams || !goals || !strengths || !weaknesses) {
       router.push('/');
     } else {
       setUserName(name);
       setUserInterests(interests);
+      setUserDreams(dreams);
+      setUserGoals(goals);
+      setUserStrengths(strengths);
+      setUserWeaknesses(weaknesses);
       setMessages([
         {
           id: 1,
           sender: 'bot',
-          text: `Hey ${name}! I see you're interested in ${interests}. Let's talk about how you're feeling.`,
+          text: `Hey ${name}! I'm here to listen. How are you feeling today?`,
         },
       ]);
     }
@@ -93,6 +101,10 @@ export default function ChatPage() {
           mood: currentInput,
           name: userName,
           interests: userInterests,
+          dreams: userDreams,
+          goals: userGoals,
+          strengths: userStrengths,
+          weaknesses: userWeaknesses,
         });
         const botMessage: Message = {
           id: Date.now() + 1,
