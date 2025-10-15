@@ -12,9 +12,9 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateHopecoreResponseInputSchema = z.object({
-  mood: z
-    .string()
-    .describe('The user\'s current mood or feeling.'),
+  mood: z.string().describe("The user's current mood or feeling."),
+  name: z.string().describe("The user's name."),
+  interests: z.string().describe("The user's interests."),
 });
 export type GenerateHopecoreResponseInput = z.infer<typeof GenerateHopecoreResponseInputSchema>;
 
@@ -33,8 +33,10 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateHopecoreResponseOutputSchema},
   prompt: `You are a hopecore AI assistant designed to provide uplifting and supportive messages. Your goal is to respond as humanly as possible.
 
+  The user's name is {{{name}}} and they are interested in {{{interests}}}.
+
   Based on the user's mood, generate a hopecore quote or message that offers encouragement and support.
-  You can compare their struggles or journey with fictional characters from anime, popular TV shows, movies, or books to make the response more relatable and inspiring.
+  You can compare their struggles or journey with fictional characters from anime, popular TV shows, movies, or books to make the response more relatable and inspiring, especially drawing from their stated interests.
 
   Mood: {{{mood}}}
 
