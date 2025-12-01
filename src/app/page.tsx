@@ -19,7 +19,7 @@ export default function WelcomePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() && interests.trim()) {
+    if (isFormValid()) {
       localStorage.setItem('userName', name.trim());
       localStorage.setItem('userInterests', interests.trim());
       localStorage.setItem('userDreams', dreams.trim());
@@ -36,7 +36,7 @@ export default function WelcomePage() {
 
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 sm:p-8">
-      <Card className="w-full max-w-lg bg-gradient-to-b from-white/60 to-primary/5 border border-primary/15 shadow-xl">
+      <Card className="w-full max-w-lg bg-card text-card-foreground border-none shadow-xl">
         <CardHeader>
           <CardTitle className="font-headline text-3xl text-center">Welcome!</CardTitle>
           <CardDescription className="text-center text-lg text-muted-foreground pt-1">
@@ -46,7 +46,7 @@ export default function WelcomePage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-base">What should I call you?</Label>
+              <Label htmlFor="name" className="text-base font-medium">What should I call you?</Label>
               <Input
                 id="name"
                 type="text"
@@ -58,7 +58,7 @@ export default function WelcomePage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="interests" className="text-base">What are your interests?</Label>
+              <Label htmlFor="interests" className="text-base font-medium">What are your interests?</Label>
               <Textarea
                 id="interests"
                 placeholder="e.g., Anime, sci-fi movies, fantasy books..."
@@ -72,7 +72,7 @@ export default function WelcomePage() {
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dreams" className="text-base">What are your dreams for the future?</Label>
+              <Label htmlFor="dreams" className="text-base font-medium">What are your dreams for the future?</Label>
               <Textarea
                 id="dreams"
                 placeholder="e.g., Travel the world, write a book..."
@@ -83,7 +83,7 @@ export default function WelcomePage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="goals" className="text-base">What are some goals you're working on?</Label>
+              <Label htmlFor="goals" className="text-base font-medium">What are some goals you're working on?</Label>
               <Textarea
                 id="goals"
                 placeholder="e.g., Learning a new skill, getting a promotion..."
@@ -95,7 +95,7 @@ export default function WelcomePage() {
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="strengths" className="text-base">What are your greatest strengths?</Label>
+                  <Label htmlFor="strengths" className="text-base font-medium">What are your greatest strengths?</Label>
                   <Textarea
                     id="strengths"
                     placeholder="e.g., Creative, determined, empathetic..."
@@ -106,7 +106,7 @@ export default function WelcomePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="weaknesses" className="text-base">What are some weaknesses you're working on?</Label>
+                  <Label htmlFor="weaknesses" className="text-base font-medium">What are some weaknesses you're working on?</Label>
                   <Textarea
                     id="weaknesses"
                     placeholder="e.g., Procrastination, public speaking..."
